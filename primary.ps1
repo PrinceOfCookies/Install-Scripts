@@ -23,7 +23,8 @@ function Install-Executable {
         Invoke-WebRequest -Uri $Url -OutFile $path
         Start-Process -FilePath $path -ArgumentList $Args -Wait
         Remove-Item $path
-    } else {
+    }
+    else {
         Write-Host "$Name is already installed."
     }
 }
@@ -41,7 +42,8 @@ function Install-MSI {
         Invoke-WebRequest -Uri $Url -OutFile $path
         Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$path`" /quiet" -Wait
         Remove-Item $path
-    } else {
+    }
+    else {
         Write-Host "$Name is already installed."
     }
 }
@@ -66,14 +68,14 @@ function Install-PS1 {
         [switch]$Force
     )
 
-    # Determine desktop path and target filename
     $desktop = [Environment]::GetFolderPath('Desktop')
 
     if (-not $FileName) {
         try {
             $uri = [Uri]$Url
             $FileName = [IO.Path]::GetFileName($uri.AbsolutePath)
-        } catch {
+        }
+        catch {
             $FileName = ''
         }
         if (-not $FileName) { $FileName = 'downloaded-script.ps1' }
@@ -90,15 +92,14 @@ function Install-PS1 {
     try {
         Write-Host "Downloading script from $Url to $dest..."
         Invoke-WebRequest -Uri $Url -OutFile $dest -UseBasicParsing
-        # Allow execution if policy blocks downloaded file
         Unblock-File -Path $dest -ErrorAction SilentlyContinue
         Write-Host "Saved script to $dest"
-    } catch {
+    }
+    catch {
         Write-Error "Failed to download script: $_"
     }
 }
 
-# --- Setup taskbar ---
 # --- Setup taskbar position and center icons ---
 function TaskbarSetup {
     # Move taskbar to bottom
@@ -145,16 +146,18 @@ TaskbarSetup
 if (-not (Is-ProgramInstalled "WinDirStat")) {
     Write-Host "Installing WinDirStat..."
     winget install -e --id WinDirStat.WinDirStat --silent
-} else {
+}
+else {
     Write-Host "WinDirStat is already installed."
 }
 
 if (-not (Is-ProgramInstalled "git")) {
     Write-Host "Instaling Git..."
     winget install --id Git.Git -e --source winget
- } else {
+}
+else {
     Write-Host "Git is already installed."
- }
+}
 
 
 # Vencord (no install check since it’s a mod)
@@ -171,7 +174,8 @@ if (Is-ProgramInstalled "Edge") {
     Invoke-WebRequest -Uri "https://code.ravendevteam.org/talon/edge_vanisher.ps1" -OutFile $edgeScript
     Start-Process -FilePath $edgeScript -Wait
     Remove-Item $edgeScript
-} else {
+}
+else {
     Write-Host "Edge is already removed."
 }
 
