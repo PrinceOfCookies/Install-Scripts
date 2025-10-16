@@ -1,19 +1,19 @@
 Set-Location -Path 'E:\' -ErrorAction Stop
+$projectsPath = Join-Path 'E:\' 'Projects'
 
-$projectsPath = Join-Path -Path 'E:\' -ChildPath 'Projects'
-if (-not (Test-Path -Path $projectsPath)) {
+if (-not (Test-Path $projectsPath)) {
     New-Item -Path $projectsPath -ItemType Directory -Force | Out-Null
 }
+
 Set-Location -Path $projectsPath
 
-# Check for git
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     Write-Error "Git is not installed or not on PATH. Install Git from https://git-scm.com/ and retry."
     Read-Host -Prompt 'Press Enter to exit'
     exit 1
 }
 
-Write-Host "Git found. Beginning cloning..." -ForegroundColor Green
+Write-Host "`nGit found. Beginning cloning..." -ForegroundColor Green
 
 $repos = @(
     "https://github.com/PrinceOfCookies/princeofcookies.com.git",
@@ -27,7 +27,7 @@ $repos = @(
     "https://github.com/PrinceOfCookies/GmodChatRelay.git"
 )
 
-if ($repos.Count -eq 0) {
+if (-not $repos.Count) {
     Write-Host "No repositories specified in `$repos. Nothing to clone." -ForegroundColor Yellow
     Read-Host -Prompt 'Press Enter to exit'
     exit 0
@@ -36,24 +36,23 @@ if ($repos.Count -eq 0) {
 foreach ($repo in $repos) {
     if (-not $repo) { continue }
     $name = ($repo -split '/|:')[-1] -replace '\.git$',''
-    if (-not $name) {
-        Write-Warning "Could not determine folder name for '$repo'. Skipping."
-        continue
-    }
+    if (-not $name) { continue }
 
-    if (Test-Path -Path (Join-Path -Path $projectsPath -ChildPath $name)) {
+    $targetPath = Join-Path $projectsPath $name
+    if (Test-Path $targetPath) {
         Write-Host "Skipping '$name' (already exists)." -ForegroundColor Yellow
         continue
     }
 
-    Write-Host "Cloning $repo ..."
-    $proc = Start-Process -FilePath git -ArgumentList "clone", $repo -NoNewWindow -PassThru -Wait
+    Write-Host "Cloning $name..." -ForegroundColor Cyan
+    $proc = Start-Process git -ArgumentList "clone", $repo -NoNewWindow -PassThru -Wait
+
     if ($proc.ExitCode -eq 0) {
-        Write-Host " done." -ForegroundColor Green
+        Write-Host "Cloned $name." -ForegroundColor Green
     } else {
-        Write-Host " failed (exit code $($proc.ExitCode))." -ForegroundColor Red
+        Write-Host "Failed to clone $name (exit code $($proc.ExitCode))." -ForegroundColor Red
     }
 }
 
-Write-Host "Cloning finished." -ForegroundColor Green
+Write-Host "`nCloning finished." -ForegroundColor Green
 Read-Host -Prompt 'Press Enter to exit'
